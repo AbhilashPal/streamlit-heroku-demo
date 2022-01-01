@@ -1,3 +1,5 @@
+%%writefile app.py
+
 from datasets import load_dataset
 import streamlit as st
 import pandas as pd 
