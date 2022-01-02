@@ -1,11 +1,10 @@
-%%writefile app.py
-
 from datasets import load_dataset
 import streamlit as st
 import pandas as pd 
 from googletrans import Translator 
 import session_state
 import time 
+from fuzzywuzzy import fuzz,process
 
 # import torch
 # from transformers import PegasusForConditionalGeneration, PegasusTokenizer
@@ -70,8 +69,8 @@ def main():
 			st.subheader("Your Answer : ")
 			st.text(message1)
 			score = 0
-			if message1.lower() in cqa["answer"].lower():
-				score = 1
+			if fuzz.ratio(message1.lower(),cqa["answer"].lower()) > 75:
+				score = fuzz.ratio(message1.lower(),cqa["answer"].lower()) 
 			st.text("Score : "+str(score))
 			if score:
 				st.text("Correct!")
