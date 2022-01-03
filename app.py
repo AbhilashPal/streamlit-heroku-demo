@@ -62,7 +62,7 @@ def main():
 		st.subheader("Question : ")
 		st.markdown(cqa['question'])	
 
-		message1 = st.text_area("Enter your answer","Type Here")
+		message1 = st.text_area("Enter your answer","")
 		a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
 
 		if a != "Please select an answer":
