@@ -1,5 +1,4 @@
 
-from datasets import load_dataset
 import streamlit as st
 import pandas as pd 
 from googletrans import Translator 
@@ -11,8 +10,8 @@ from fuzzywuzzy import fuzz,process
 # from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
 state = session_state.get(question_number=0)
-
 translator = Translator()
+
 
 # model_name = 'tuner007/pegasus_paraphrase'
 # torch_device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -28,7 +27,7 @@ translator = Translator()
 @st.cache
 def get_qa_pair(file,rand):
 	df = pd.read_csv(file,sep="\t",lineterminator='\n')
-	a = df.sample().reset_index()
+	a = df.sample(1).reset_index()
 	return {
 	"text" : a["text"][0],
 	"question" : a["question"][0],
@@ -64,6 +63,8 @@ def main():
 	st.write('You selected:', option)
  
 	if option == "Reading Comprehension":
+		
+	
 		st.text("Question Number : " +str(state.question_number))
 		st.text("Your Score : " +str(scoreM))
 		cqa = get_qa_pair(stud_class+".tsv",state.question_number) # high.tsv is saved
@@ -77,25 +78,46 @@ def main():
 
 		message1 = st.text_area("Enter your answer","Type Here")
 		# a = st.selectbox('Answer:', ["Please select an answer","Confirm Answer"])
-		a = st.radio("Confirm : ", ["Answering","Confirm!"])
-
-		if a != "Answering":
-			st.subheader("Your Answer : ")
+		# a = st.radio("Confirm : ", ["Answering","Confirm!"])
+		
+		# if a != "Answering":
+		if st.button("Check"):
+			st.subheader("Your Answer :")
 			st.text(message1)
 			score = 0
 			if fuzz.ratio(message1.lower(),cqa["answer"].lower()) > 75:
 				score = fuzz.ratio(message1.lower(),cqa["answer"].lower()) 
 			st.text("Score : "+str(score))
-			if score:
-				st.text("Correct!")
-				st.subheader("Full Answer : ")
-				st.text(cqa['answer'])
-			else: 
-				st.text("Incorrect!")
-				st.subheader("Actual Answer : ")
-				st.text(cqa['answer'])
+			# if score:
+			# 	st.text("Correct!")
+			# 	st.subheader("Full Answer : ")
+			# 	st.text(cqa['answer'])
+			# else: 
+			# 	st.text("Incorrect!")
+			# 	st.subheader("Actual Answer : ")
+			# 	st.text(cqa['answer'])
 		
+			#writing to score.tsv
+			fp = open("score.tsv","a")
+			fp.write(cqa["text"].strip()+"\t"+cqa["question"].strip()+"\t"+cqa["answer"].strip()+"\t"+message1.strip()+"\t"+str(score)+"\n")
+			fp.close()
+			 	
+			
 		
+		if st.button("Show Answers"):
+				try:
+					df = pd.read_csv("score.tsv",sep="\t")
+					json = df.to_json(orient="records")
+					# json2 = {}
+					# for i in range(len(json["Text"])):
+					# 	json2[i] = {}
+					
+					# for i in range(len(json["Text"])):
+					# 	json2[i][]
+					
+					st.json(json)
+				except: 
+					st.text("No Questions Answered Yet!")
 		if st.button("Get New Question"):
 			state.question_number+=1
 			scoreM +=score
